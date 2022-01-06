@@ -1,19 +1,3 @@
-const translator = {
-  seg: 'segunda-feira',
-  ter: 'terça-feira',
-  qui: 'quinta-feira',
-  sex: 'sexta-feira',
-  sab: 'sábado',
-  out: 'Outubro',
-  nov: 'Novembro',
-  dez: 'Dezembro',
-  jan: 'Janeiro',
-  ten: '10h',
-  fourteen: '14h',
-  sixteen: '16h',
-  thirteen: '13h',
-}
-
 export const prepareFlashPayload = (formData, nome) => ({
   nome: formData.nome,
   email: formData.email,
@@ -52,13 +36,15 @@ export const prepareBudgetPayload = (formData) => ({
   tamanho_outro: formData.otherSize,
   local_corpo: formData.bodyPlacement,
   local_outro: formData.otherPlacement,
+  eh_cobertura: formData.cover,
+  tamanho_tatuagem_a_cobrir: formData.oldTattooSize
 })
 
 const textTransformObjectInfo = infoObj => {
   const keys = Object.keys(infoObj)
   return keys.reduce((acc, currentValue) => {
     if (infoObj[currentValue] === 'sim') {
-      return acc + ` ${translator[currentValue]}`
+      return acc + ` ${currentValue}`
     }
     return acc
   }, '')

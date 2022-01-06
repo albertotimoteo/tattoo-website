@@ -1,21 +1,18 @@
 import React, { useState } from 'react'
 import { withRouter } from 'react-router'
-import { useParams } from 'react-router-dom'
+import {  useLocation } from 'react-router-dom'
 
 import { Carousel } from 'react-responsive-carousel'
 
 import FlashForm from '../FlashForm/FlashForm'
-import { catalogData } from '../../utils/catalogData'
 
 import 'react-responsive-carousel/lib/styles/carousel.min.css'
 import * as S from './ProductDetails.styled'
 
 const ProductDetails = () => {
   const [showForm, setShowForm] = useState(false)
-  const { code } = useParams()
-  const { picture, alternativePicture, name, price, size } = catalogData.filter(
-    product => product.code === code
-  )[0]
+  const location = useLocation()
+  const {picture, alternativePicture, name, price, size} = location.state
 
   window.scrollTo(0, 350)
 
@@ -33,12 +30,12 @@ const ProductDetails = () => {
       </S.CarouselContainer>
       <S.InfoWrapper>
         {showForm ? (
-          <FlashForm />
+          <FlashForm nome={name}/>
         ) : (
           <>
             <S.Title>{name}</S.Title>
             <S.SubTitle>
-              {price.toLocaleString('pt-BR', {
+              {Number(price).toLocaleString('pt-BR', {
                 style: 'currency',
                 currency: 'BRL',
               })}

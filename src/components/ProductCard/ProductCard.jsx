@@ -4,7 +4,14 @@ import PropTypes from 'prop-types'
 import { useHistory } from 'react-router-dom'
 import * as S from './ProductCard.styled'
 
-const ProductCard = ({ name, picture, alternativePicture, price, code }) => {
+const ProductCard = ({
+  name,
+  picture,
+  alternativePicture,
+  price,
+  code,
+  size,
+}) => {
   const history = useHistory()
 
   return (
@@ -12,11 +19,27 @@ const ProductCard = ({ name, picture, alternativePicture, price, code }) => {
       <S.ProductImage
         img={picture}
         altImg={alternativePicture}
-        onClick={() => history.push(`/flash-detalhes/${code}`)}
+        onClick={() =>
+          history.push(`/flash-detalhes/${code}`, {
+            name,
+            picture,
+            alternativePicture,
+            price,
+            size,
+          })
+        }
       />
       <S.LinkWrapper>
         <S.Link
-          onClick={() => history.push(`/flash-detalhes/${code}`)}
+          onClick={() =>
+            history.push(`/flash-detalhes/${code}`, {
+              name,
+              picture,
+              alternativePicture,
+              price,
+              size,
+            })
+          }
         >{`${name} - R$${price}`}</S.Link>
       </S.LinkWrapper>
     </S.Wrapper>

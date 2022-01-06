@@ -2,13 +2,22 @@ import { GoogleSpreadsheet } from 'google-spreadsheet'
 import {
   flashSpreadsheet,
   budgetSpreadsheet,
+  flashListSpreadsheet,
+  optionsSpreadsheet,
   clientEmail,
   privateKey,
 } from './googleData'
 
-const createDoc = async isFlash => {
+const getSpreadsheet = {
+  flash: flashSpreadsheet,
+  budget: budgetSpreadsheet,
+  list: flashListSpreadsheet,
+  options: optionsSpreadsheet
+}
+
+const createDoc = async operation => {
   const doc = new GoogleSpreadsheet(
-    isFlash ? flashSpreadsheet : budgetSpreadsheet
+    getSpreadsheet[operation]
   )
 
   await doc.useServiceAccountAuth({
@@ -19,12 +28,19 @@ const createDoc = async isFlash => {
   return doc
 }
 
-export const addInfo = async (isFlash, payload) => {
-  const doc = await createDoc(isFlash)
+export const addInfo = async (operation, payload) => {
+  const doc = await createDoc(operation)
   const sheet = await doc.sheetsByIndex[0]
   const response = await sheet.addRow(payload)
   if (response) {
     return true
   }
   return false
+}
+
+export const getSpreadsheetInfo = async (operation) => {
+  const doc = await createDoc(operation)
+  const sheet = doc.sheetsByIndex[0]
+  const rows = await sheet.getRows()
+  return rows
 }

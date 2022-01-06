@@ -9,6 +9,11 @@ export const Wrapper = styled.div`
 
   background: white;
 
+  font-family: sans-serif;
+  color: #49694a;
+  font-size: 16px;
+  padding-left: 40px;
+
   @media(max-width: 767px) {
     flex-direction: column;
     align-items: center;

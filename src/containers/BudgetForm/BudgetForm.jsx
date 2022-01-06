@@ -9,11 +9,10 @@ import {
   Select,
   MenuItem,
 } from '@mui/material'
-import {
-  tatooSizeOptions,
-  tatooTypeOptions,
-  localeOptions,
-} from './budgetFormOptions'
+import { tatooTypeOptions, localeOptions } from './budgetFormOptions'
+
+import { useOptions } from '../../store/options'
+
 import { prepareBudgetPayload } from '../../utils/preparePayload'
 import { uploadFiles } from '../../utils/sendToDrive'
 import { addInfo } from '../../utils/sendToSpreadsheet'
@@ -34,14 +33,16 @@ const BudgetForm = () => {
   const [modalMessage, setModalMessage] = useState(
     'As imagens foram enviadas com sucesso! Você ainda deve clicar em continuar para terminar de preencher o formulário!'
   )
-  const [isBooking, setIsBooking] = useState(false)
+  const { $options } = useOptions()
+  const { dias_orcamento, horas_orcamento, meses_orcamento, tamanhos, isBooking } =
+    $options
   const [formData, setFormData] = useState({
     nome: '',
     email: '',
     cpf: '',
-    preferredDay: { ter: '', qui: '', sex: '', sab: '' },
-    preferredMonth: { nov: '', dez: '', jan: '' },
-    preferredHour: { ten: '', fourteen: '', sixteen: '', thirteen: '' },
+    preferredDay: {},
+    preferredMonth: {},
+    preferredHour: {},
     address: {
       cep: '',
       street: '',
@@ -58,7 +59,10 @@ const BudgetForm = () => {
     bodyPlacement: '',
     otherPlacement: '',
     referencesSent: false,
+    cover: null,
+    oldTattooSize: '',
   })
+  
 
   const history = useHistory()
 
@@ -94,6 +98,9 @@ const BudgetForm = () => {
           O estúdio da Mari fica localizado no bairro Funcionários e o endereço
           será divulgado a você após o pagamento do sinal.
         </S.ListItem>
+        <S.ListItem>
+          O orçamento possui um prazo de validade de <strong>90 dias.</strong>
+        </S.ListItem>
       </ul>
     </>,
     <>
@@ -124,7 +131,7 @@ const BudgetForm = () => {
       </S.Row>
       <S.Row>
         <label>
-          Você já tomou pelo menos uma dose da vacina contra a COVID-19?
+          Você já tomou pelo menos as duas doses da vacina contra a COVID-19?
         </label>
         <div>
           <input
@@ -329,196 +336,76 @@ const BudgetForm = () => {
           Quais dias da semana você pode? Marque quantas opções quiser
         </label>
         <div>
-          <input
-            type='checkbox'
-            id='terca'
-            name='preferredDay'
-            value='terca'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  ter: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='terca'>Terça</label>
-          <input
-            type='checkbox'
-            id='quinta'
-            name='preferredDay'
-            value='quinta'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  qui: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='quinta'>Quinta</label>
-          <input
-            type='checkbox'
-            id='sexta'
-            name='preferredDay'
-            value='sexta'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  sex: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='sexta'>Sexta</label>
-          <input
-            type='checkbox'
-            id='sabado'
-            name='preferredDay'
-            value='sabado'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  sab: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='sabado'>Sábado</label>
+          {dias_orcamento.map(day => (
+            <React.Fragment key={day}>
+              <input
+                type='checkbox'
+                id={day.toLowerCase()}
+                name='preferredDay'
+                value={day.toLowerCase()}
+                onChange={event =>
+                  setFormData({
+                    ...formData,
+                    preferredDay: {
+                      ...formData.preferredDay,
+                      [day]: event.target.checked ? 'sim' : 'não',
+                    },
+                  })
+                }
+              />
+              <label htmlFor={day.toLowerCase()}>{day}</label>
+            </React.Fragment>
+          ))}
         </div>
       </S.Row>
       <S.Row>
         <label>Quais horários você pode? Marque quantas opções quiser</label>
         <div>
-          <input
-            type='checkbox'
-            id='ten'
-            name='preferredHour'
-            value='ten'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredHour: {
-                  ...formData.preferredHour,
-                  ten: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='ten'>Às 10h</label>
-          <input
-            type='checkbox'
-            id='fourteen'
-            name='preferredHour'
-            value='fourteen'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredHour: {
-                  ...formData.preferredHour,
-                  fourteen: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='fourteen'>Às 14h</label>
-          <input
-            type='checkbox'
-            id='sixteen'
-            name='preferredHour'
-            value='sixteen'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredHour: {
-                  ...formData.preferredHour,
-                  sixteen: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='sixteen'>Às 16h</label>
-          {formData.preferredDay.sab === 'sim' && (
-            <>
+          {horas_orcamento.map(hour => (
+            <React.Fragment key={hour}>
               <input
                 type='checkbox'
-                id='thirteen'
+                id={hour}
                 name='preferredHour'
-                value='thirteen'
+                value={hour}
                 onChange={event =>
                   setFormData({
                     ...formData,
                     preferredHour: {
                       ...formData.preferredHour,
-                      thirteen: event.target.checked ? 'sim' : 'não',
+                      [hour]: event.target.checked ? 'sim' : 'não',
                     },
                   })
                 }
               />
-              <label htmlFor='thirteen'>Às 13h (Exclusivo sábado)</label>
-            </>
-          )}
+              <label htmlFor={hour}>Às {hour}</label>
+            </React.Fragment>
+          ))}
         </div>
       </S.Row>
       <S.Row>
         <label>Qual a sua preferência de mês?</label>
         <div>
-          <input
-            type='checkbox'
-            id='nov'
-            name='preferredMonth'
-            value='nov'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredMonth: {
-                  ...formData.preferredMonth,
-                  nov: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='nov'>Novembro</label>
-          <input
-            type='checkbox'
-            id='dez'
-            name='preferredMonth'
-            value='dez'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredMonth: {
-                  ...formData.preferredMonth,
-                  dez: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='dez'>Dezembro</label>
-          <input
-            type='checkbox'
-            id='jan'
-            name='preferredMonth'
-            value='jan'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredMonth: {
-                  ...formData.preferredMonth,
-                  jan: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='jan'>Janeiro</label>
+          {meses_orcamento.map(month => (
+            <React.Fragment key={month}>
+              <input
+                type='checkbox'
+                id={month}
+                name='preferredMonth'
+                value={month}
+                onChange={event =>
+                  setFormData({
+                    ...formData,
+                    preferredMonth: {
+                      ...formData.preferredMonth,
+                      [month]: event.target.checked ? 'sim' : 'não',
+                    },
+                  })
+                }
+              />
+              <label htmlFor={month}>{month}</label>
+            </React.Fragment>
+          ))}
         </div>
       </S.Row>
     </>,
@@ -562,9 +449,14 @@ const BudgetForm = () => {
           }
           variant='standard'
         >
-          {tatooSizeOptions.map(type => (
-            <MenuItem value={type.value}>{type.text}</MenuItem>
-          ))}
+          {tamanhos.length &&
+            tamanhos.map(size => (
+              <MenuItem
+                value={isNaN(Number(size)) ? 'outro' : Number(size)}
+              >{`${size.replace('.', ',')}${
+                !isNaN(Number(size)) ? 'cm' : ''
+              }`}</MenuItem>
+            ))}
         </Select>
       </S.Row>
       {formData.tatooSize === 'outro' && (
@@ -575,6 +467,51 @@ const BudgetForm = () => {
             value={formData.otherSize}
             onChange={event =>
               setFormData({ ...formData, otherSize: event.target.value })
+            }
+            color='primary'
+          />
+        </S.Row>
+      )}
+      <S.Row>
+        <label htmlFor='cover' className='cover'>
+          A sua tatuagem será uma cobertura?
+        </label>
+        <div>
+          <input
+            type='radio'
+            id='yesCover'
+            name='cover'
+            value='sim'
+            onChange={event =>
+              setFormData({ ...formData, cover: event.target.value })
+            }
+          ></input>
+          <label htmlFor='yesCover'>Sim</label>
+          <input
+            type='radio'
+            id='noCover'
+            name='cover'
+            value='nao'
+            onChange={event =>
+              setFormData({
+                ...formData,
+                cover: event.target.value,
+                oldTattooSize: '',
+              })
+            }
+          ></input>
+          <label htmlFor='noCover'>Não</label>
+        </div>
+      </S.Row>
+      {formData.cover === 'sim' && (
+        <S.Row>
+          <TextField
+            label='Qual o tamanho da tatuagem que você vai cobrir? (Em cm)'
+            variant='standard'
+            value={formData.oldTattooSize}
+            type='number'
+            onChange={event =>
+              setFormData({ ...formData, oldTattooSize: event.target.value })
             }
             color='primary'
           />
@@ -709,39 +646,9 @@ const BudgetForm = () => {
       case 3:
         const { preferredDay, preferredHour, preferredMonth } = formData
         if (
-          !preferredDay.ter &&
-          !preferredDay.qui &&
-          !preferredDay.sex &&
-          !preferredDay.sab
-        )
-          return
-        if (
-          !preferredDay.ter === 'não' &&
-          !preferredDay.qui === 'não' &&
-          !preferredDay.sex === 'não' &&
-          !preferredDay.sab === 'não'
-        )
-          return
-        if (!preferredMonth.jan && !preferredMonth.nov && !preferredMonth.dez)
-          return
-        if (
-          preferredMonth.jan === 'não' &&
-          preferredMonth.nov === 'não' &&
-          preferredMonth.dez === 'não'
-        )
-          return
-        if (
-          !preferredHour.ten &&
-          !preferredHour.fourteen &&
-          !preferredHour.sixteen &&
-          !preferredHour.thirteen
-        )
-          return
-        if (
-          preferredHour.ten === 'não' &&
-          preferredHour.fourteen === 'não' &&
-          preferredHour.sixteen === 'não' &&
-          preferredHour.thirteen === 'não'
+          !Object.values(preferredDay).length ||
+          !Object.values(preferredHour).length ||
+          !Object.values(preferredMonth).length
         )
           return
         return setStep(4)
@@ -756,13 +663,14 @@ const BudgetForm = () => {
         if (formData.tatooSize === 'outro' && !formData.otherSize) return
         if (formData.bodyPlacement === 'outro' && !formData.otherPlacement)
           return
+        if (formData.cover === 'sim' && !formData.oldTattooSize) return
         setButtonText('Enviar')
         return setStep(5)
       case 5:
         if (!termCheck) return
         setLoading(true)
         const payload = prepareBudgetPayload(formData)
-        const response = await addInfo(false, payload)
+        const response = await addInfo('budget', payload)
         setLoading(false)
         if (response) {
           setModalMessage(
@@ -775,19 +683,19 @@ const BudgetForm = () => {
     }
   }
 
-  return (
-    <S.Wrapper>
-      <h3>Novo Orçamento</h3>
-      {!isBooking ? (
+  if (!isBooking) {
+    return (
+      <S.Wrapper>
+        <h3>Novo Orçamento</h3>
         <>
           <S.Row>
             Como o número de pessoas interessadas em tatuar comigo é muito alto,
             eu tive que adotar o método de agendamento por abertura de agenda.
           </S.Row>
           <S.Row>
-            E, no momento, minha agenda está fechada. Por
-            enquanto não temos previsão de abertura, mas informaremos por aqui e
-            pelo instagram quando acontecer.
+            E, no momento, minha agenda está fechada. Por enquanto não temos
+            previsão de abertura, mas informaremos por aqui e pelo instagram
+            quando acontecer.
           </S.Row>
           <S.Row>
             Quando o formulário de orçamentos está aberto, ele permanece aberto
@@ -796,31 +704,40 @@ const BudgetForm = () => {
           </S.Row>
           <S.Row>Um beijo e nos vemos na próxima abertura!</S.Row>
         </>
-      ) : (
-        <>
-          {stepsRender[step]}
-          <div>
-            {step > 2 && (
-              <Button onClick={() => setStep(step - 1)} disabled={isLoading}>
-                Voltar
-              </Button>
-            )}
-            <Button onClick={() => handleContinue()} disabled={isLoading}>
-              {buttonText}
+      </S.Wrapper>
+    )
+  }
+
+  if (!dias_orcamento.length) {
+    return <S.Wrapper>Carregando...</S.Wrapper>
+  }
+
+  return (
+    <S.Wrapper>
+      <h3>Novo Orçamento</h3>
+      <>
+        {stepsRender[step]}
+        <div>
+          {step > 2 && (
+            <Button onClick={() => setStep(step - 1)} disabled={isLoading}>
+              Voltar
             </Button>
-          </div>
-          <Dialog
-            onClose={() => {
-              setOpen(false)
-              if (termCheck) history.push('/')
-            }}
-            open={isOpen}
-          >
-            <DialogTitle>Sucesso!</DialogTitle>
-            <DialogContent>{modalMessage}</DialogContent>
-          </Dialog>
-        </>
-      )}
+          )}
+          <Button onClick={() => handleContinue()} disabled={isLoading}>
+            {buttonText}
+          </Button>
+        </div>
+        <Dialog
+          onClose={() => {
+            setOpen(false)
+            if (termCheck) history.push('/')
+          }}
+          open={isOpen}
+        >
+          <DialogTitle>Sucesso!</DialogTitle>
+          <DialogContent>{modalMessage}</DialogContent>
+        </Dialog>
+      </>
     </S.Wrapper>
   )
 }

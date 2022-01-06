@@ -7,6 +7,7 @@ import { Route, Switch } from 'react-router-dom'
 import { Router } from 'react-router'
 import { createBrowserHistory } from 'history'
 import { createTheme, ThemeProvider } from '@mui/material'
+import StateProviders from './utils/StateProviders'
 import BookingRules from './containers/BookingRules/BookingRules'
 import Contact from './containers/Contact/Contact'
 import BudgetForm from './containers/BudgetForm/BudgetForm'
@@ -22,20 +23,22 @@ const theme = createTheme({
 
 function App() {
   return (
-    <ThemeProvider theme={theme}>
-      <Router history={history}>
-        <BaseLayout>
-          <Switch>
-            <Route path='/' exact component={ProductList} />
-            <Route path='/flash-detalhes/:code' component={ProductDetails} />
-            <Route path='/sobre-mari' component={WhoIs} />
-            <Route path='/condicoes-agendamento' component={BookingRules} />
-            <Route path='/contato' component={Contact} />
-            <Route path='/orcamento' component={BudgetForm} />
-          </Switch>
-        </BaseLayout>
-      </Router>
-    </ThemeProvider>
+    <StateProviders>
+      <ThemeProvider theme={theme}>
+        <Router history={history}>
+          <BaseLayout>
+            <Switch>
+              <Route path='/' exact component={ProductList} />
+              <Route path='/flash-detalhes/:code' component={ProductDetails} />
+              <Route path='/sobre-mari' component={WhoIs} />
+              <Route path='/condicoes-agendamento' component={BookingRules} />
+              <Route path='/contato' component={Contact} />
+              <Route path='/orcamento' component={BudgetForm} />
+            </Switch>
+          </BaseLayout>
+        </Router>
+      </ThemeProvider>
+    </StateProviders>
   )
 }
 

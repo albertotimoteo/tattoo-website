@@ -1,17 +1,18 @@
 import React, { useState } from 'react'
-import { useHistory, useParams } from 'react-router-dom'
+import { useHistory } from 'react-router-dom'
 
 import { TextField, Dialog, DialogContent, DialogTitle } from '@mui/material'
 import InputMask from 'react-input-mask'
 
+import { useOptions } from '../../store/options'
+
 import { fetchAddress } from '../../utils/fetchAdress'
-import { catalogData } from '../../utils/catalogData'
 import { prepareFlashPayload } from '../../utils/preparePayload'
 import { addInfo } from '../../utils/sendToSpreadsheet'
 import Button from '../../components/Button/Button.styled'
 import * as S from './FlashForm.styled'
 
-const FlashForm = () => {
+const FlashForm = ({ nome }) => {
   const [step, setStep] = useState(0)
   const [checks, setChecks] = useState({ age: null, vaccine: null })
   const [termCheck, setTermCheck] = useState(false)
@@ -22,9 +23,9 @@ const FlashForm = () => {
     email: '',
     nome: '',
     cpf: '',
-    preferredDay: { seg: '', ter: '', qui: '', sex: '', sab: '' },
-    preferredMonth: {  nov: '', dez: '', jan: '' },
-    preferredHour: { ten: '', fourteen: '', sixteen: '', thirteen: '' },
+    preferredDay: {},
+    preferredMonth: {},
+    preferredHour: {},
     address: {
       cep: '',
       street: '',
@@ -36,11 +37,10 @@ const FlashForm = () => {
     },
     bodyPlacement: '',
   })
+  const { $options } = useOptions()
+  const { dias_flash, horas_flash, meses_flash } = $options
 
   const history = useHistory()
-  const { code } = useParams()
-
-  const nome = catalogData.find(flash => flash.code === code).name
 
   const stepsRender = [
     <>
@@ -71,7 +71,7 @@ const FlashForm = () => {
       </S.Row>
       <S.Row>
         <label>
-          Você já tomou pelo menos uma dose da vacina contra a COVID-19?
+          Você já tomou pelo menos as duas doses da vacina contra a COVID-19?
         </label>
         <div>
           <input
@@ -276,217 +276,76 @@ const FlashForm = () => {
           Quais dias da semana você pode? Marque quantas opções quiser
         </label>
         <div>
-          <input
-            type='checkbox'
-            id='segunda'
-            name='preferredDay'
-            value='segunda'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  seg: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='segunda'>Segunda</label>
-          <input
-            type='checkbox'
-            id='terca'
-            name='preferredDay'
-            value='terca'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  ter: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='terca'>Terça</label>
-          <input
-            type='checkbox'
-            id='quinta'
-            name='preferredDay'
-            value='quinta'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  qui: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='quinta'>Quinta</label>
-          <input
-            type='checkbox'
-            id='sexta'
-            name='preferredDay'
-            value='sexta'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  sex: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='sexta'>Sexta</label>
-          <input
-            type='checkbox'
-            id='sabado'
-            name='preferredDay'
-            value='sabado'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredDay: {
-                  ...formData.preferredDay,
-                  sab: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='sabado'>Sábado</label>
+          {dias_flash.map(day => (
+            <React.Fragment key={day}>
+              <input
+                type='checkbox'
+                id={day.toLowerCase()}
+                name='preferredDay'
+                value={day.toLowerCase()}
+                onChange={event =>
+                  setFormData({
+                    ...formData,
+                    preferredDay: {
+                      ...formData.preferredDay,
+                      [day]: event.target.checked ? 'sim' : 'não',
+                    },
+                  })
+                }
+              />
+              <label htmlFor={day.toLowerCase()}>{day}</label>
+            </React.Fragment>
+          ))}
         </div>
       </S.Row>
       <S.Row>
         <label>Quais horários você pode? Marque quantas opções quiser</label>
         <div>
-          <input
-            type='checkbox'
-            id='ten'
-            name='preferredHour'
-            value='ten'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredHour: {
-                  ...formData.preferredHour,
-                  ten: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='ten'>Às 10h</label>
-          <input
-            type='checkbox'
-            id='fourteen'
-            name='preferredHour'
-            value='fourteen'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredHour: {
-                  ...formData.preferredHour,
-                  fourteen: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='fourteen'>Às 14h</label>
-          {formData.preferredDay.seg === 'sim' ||
-          formData.preferredDay.ter === 'sim' ? (
-            <>
+          {horas_flash.map(hour => (
+            <React.Fragment key={hour}>
               <input
                 type='checkbox'
-                id='sixteen'
+                id={hour}
                 name='preferredHour'
-                value='sixteen'
+                value={hour}
                 onChange={event =>
                   setFormData({
                     ...formData,
                     preferredHour: {
                       ...formData.preferredHour,
-                      sixteen: event.target.checked ? 'sim' : 'não',
+                      [hour]: event.target.checked ? 'sim' : 'não',
                     },
                   })
                 }
               />
-              <label htmlFor='sixteen'>Às 16h</label>
-            </>
-          ) : null}
-          {formData.preferredDay.sab === 'sim' && (
-            <>
-              <input
-                type='checkbox'
-                id='thirteen'
-                name='preferredHour'
-                value='thirteen'
-                onChange={event =>
-                  setFormData({
-                    ...formData,
-                    preferredHour: {
-                      ...formData.preferredHour,
-                      thirteen: event.target.checked ? 'sim' : 'não',
-                    },
-                  })
-                }
-              />
-              <label htmlFor='thirteen'>Às 13h (Exclusivo sábado)</label>
-            </>
-          )}
+              <label htmlFor={hour}>Às {hour}</label>
+            </React.Fragment>
+          ))}
         </div>
       </S.Row>
       <S.Row>
         <label>Qual a sua preferência de mês?</label>
         <div>
-          <input
-            type='checkbox'
-            id='nov'
-            name='preferredMonth'
-            value='nov'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredMonth: {
-                  ...formData.preferredMonth,
-                  nov: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='nov'>Novembro</label>
-          <input
-            type='checkbox'
-            id='dez'
-            name='preferredMonth'
-            value='dez'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredMonth: {
-                  ...formData.preferredMonth,
-                  dez: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='dez'>Dezembro</label>
-          <input
-            type='checkbox'
-            id='jan'
-            name='preferredMonth'
-            value='jan'
-            onChange={event =>
-              setFormData({
-                ...formData,
-                preferredMonth: {
-                  ...formData.preferredMonth,
-                  jan: event.target.checked ? 'sim' : 'não',
-                },
-              })
-            }
-          />
-          <label htmlFor='jan'>Janeiro</label>
+          {meses_flash.map(month => (
+            <React.Fragment key={month}>
+              <input
+                type='checkbox'
+                id={month}
+                name='preferredMonth'
+                value={month}
+                onChange={event =>
+                  setFormData({
+                    ...formData,
+                    preferredMonth: {
+                      ...formData.preferredMonth,
+                      [month]: event.target.checked ? 'sim' : 'não',
+                    },
+                  })
+                }
+              />
+              <label htmlFor={month}>{month}</label>
+            </React.Fragment>
+          ))}
         </div>
       </S.Row>
       <S.Row>
@@ -569,55 +428,28 @@ const FlashForm = () => {
       case 2:
         const { preferredDay, preferredHour, preferredMonth } = formData
         if (
-          !preferredDay.seg &&
-          !preferredDay.ter &&
-          !preferredDay.qui &&
-          !preferredDay.sex &&
-          !preferredDay.sab
+          !Object.values(preferredDay).length ||
+          !Object.values(preferredHour).length ||
+          !Object.values(preferredMonth).length
         )
           return
-        if (
-          preferredDay.seg === 'não' &&
-          !preferredDay.ter === 'não' &&
-          !preferredDay.qui === 'não' &&
-          !preferredDay.sex === 'não' &&
-          !preferredDay.sab === 'não'
-        )
-          return
-        if (!preferredMonth.jan && !preferredMonth.nov && !preferredMonth.dez)
-          return
-        if (
-          preferredMonth.jan === 'não' &&
-          preferredMonth.nov === 'não' &&
-          preferredMonth.dez === 'não'
-        )
-          return
-        if (
-          !preferredHour.ten &&
-          !preferredHour.fourteen &&
-          !preferredHour.sixteen &&
-          !preferredHour.thirteen
-        )
-          return
-        if (
-          preferredHour.ten === 'não' &&
-          preferredHour.fourteen === 'não' &&
-          preferredHour.sixteen === 'não' &&
-          preferredHour.thirteen === 'não'
-        )
-          return
+
         setButtonText('Enviar')
         return setStep(3)
       case 3:
         if (!termCheck) return
         setLoading(true)
         const payload = prepareFlashPayload(formData, nome)
-        const response = await addInfo(true, payload)
+        const response = await addInfo('flash', payload)
         setLoading(false)
         if (response) setOpen(true)
         return
       default:
     }
+  }
+
+  if (!dias_flash.length) {
+    return <S.Wrapper>Carregando...</S.Wrapper>
   }
 
   return (
