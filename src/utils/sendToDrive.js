@@ -1,4 +1,5 @@
 import credsServiceUser from '../utils/google_credentials.json'
+import {imagesDriveFolder} from '../utils/googleData'
 const NodeGoogleDrive = require('google-drive-connect')
 const fileToArrayBuffer = require('file-to-array-buffer')
 
@@ -15,7 +16,7 @@ export const uploadFiles = async (nome, cpf, fileList) => {
   }
 
   const googleDriveInstance = new NodeGoogleDrive({
-    ROOT_FOLDER: '1BV9BSE94LvL78MI_Pb-bDGidbvhF9k7-',
+    ROOT_FOLDER: imagesDriveFolder,
   })
 
   await googleDriveInstance.useServiceAccountAuth(credsServiceUser)
@@ -29,7 +30,7 @@ export const uploadFiles = async (nome, cpf, fileList) => {
       const uploadResponse = await googleDriveInstance.create({
         source: fileBuffer,
         name: `${fileName}.${filesTypes[index]}`,
-        parentFolder: '1BV9BSE94LvL78MI_Pb-bDGidbvhF9k7-',
+        parentFolder: imagesDriveFolder,
         mimeType: `image/${filesTypes[index]}`,
       })
       uploadResponses.push(uploadResponse)
