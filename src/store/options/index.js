@@ -11,7 +11,8 @@ const initialState = {
   meses_flash: [],
   meses_orcamento: [],
   tamanhos: [],
-  isBooking: false
+  isBookingFlash: false,
+  isBookingBudget: false
 }
 
 const OptionsStore = useCreateStore(() => {

@@ -11,9 +11,9 @@ import * as S from './ProductList.styled'
 const ProductList = () => {
   const { $flash } = useFlash()
   const { $options } = useOptions()
-  const { isBooking } = $options
+  const { isBookingFlash } = $options
 
-  if (!isBooking) {
+  if (!isBookingFlash) {
     return (
       <S.Wrapper>
         <div>A agenda no momento está fechada.</div>

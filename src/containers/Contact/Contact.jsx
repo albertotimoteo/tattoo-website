@@ -9,11 +9,11 @@ const Contact = () => (
       <p>
         Instagram:{' '}
         <a
-          href='https://www.instagram.com/marilingerr'
+          href='https://www.instagram.com/marilinger'
           target='_blank'
           rel='noreferrer'
         >
-          @marilingerr
+          @marilinger
         </a>
       </p>
       <p>

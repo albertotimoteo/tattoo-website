@@ -12,7 +12,8 @@ export const getData = async () => {
         meses_flash,
         meses_orcamento,
         tamanhos_orcamento,
-        site_liberado,
+        flash_liberado,
+        orcamento_liberado,
       } = currentValue
       dias_flash && accumulator.dias_flash.push(dias_flash)
       dias_orcamento && accumulator.dias_orcamento.push(dias_orcamento)
@@ -21,8 +22,11 @@ export const getData = async () => {
       meses_flash && accumulator.meses_flash.push(meses_flash)
       meses_orcamento && accumulator.meses_orcamento.push(meses_orcamento)
       tamanhos_orcamento && accumulator.tamanhos.push(tamanhos_orcamento)
-      if (site_liberado && site_liberado === 's') {
-        accumulator.isBooking = true
+      if (flash_liberado && flash_liberado === 's') {
+        accumulator.isBookingFlash = true
+      }
+      if (orcamento_liberado && orcamento_liberado === 's') {
+        accumulator.isBookingBudget = true
       }
 
       return accumulator
@@ -35,7 +39,8 @@ export const getData = async () => {
       meses_flash: [],
       meses_orcamento: [],
       tamanhos: [],
-      isBooking: false,
+      isBookingFlash: false,
+      isBookingBudget: false,
     }
   )
 

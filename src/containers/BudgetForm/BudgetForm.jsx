@@ -34,7 +34,7 @@ const BudgetForm = () => {
     'As imagens foram enviadas com sucesso! Você ainda deve clicar em continuar para terminar de preencher o formulário!'
   )
   const { $options } = useOptions()
-  const { dias_orcamento, horas_orcamento, meses_orcamento, tamanhos, isBooking } =
+  const { dias_orcamento, horas_orcamento, meses_orcamento, tamanhos, isBookingBudget } =
     $options
   const [formData, setFormData] = useState({
     nome: '',
@@ -683,7 +683,7 @@ const BudgetForm = () => {
     }
   }
 
-  if (!isBooking) {
+  if (!isBookingBudget) {
     return (
       <S.Wrapper>
         <h3>Novo Orçamento</h3>
